@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  smm-alert-receiver:
+    # Build from Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Container name
+    container_name: smm-alert-receiver
+
+    # Image name
+    image: smm-alert-receiver:latest
+
+    # Port mapping: host:container
+    ports:
+      - "18123:18123" # HTTP API + Web Dashboard
+      - "1025:1025" # SMTP Server
+
+    # Environment variables
+    environment:
+      - HTTP_PORT=18123
+      - SMTP_PORT=1025
+      - SMTP_HOST=0.0.0.0
+      - SMTP_USERNAME=admin
+      - SMTP_PASSWORD=admin
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import requests; requests.get('http://localhost:18123/health', timeout=5)" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

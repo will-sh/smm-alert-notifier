@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMM Alert & Email Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            color: #667eea;
+            background: #f7fafc;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .content-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .content-header h2 {
+            color: #333;
+        }
+
+        .item-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Alert Item Styles */
+        .alert-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .alert-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .alert-id {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .alert-timestamp {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .alert-severity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity-CRITICAL { background: #fed7d7; color: #c53030; }
+        .severity-HIGH { background: #feebc8; color: #c05621; }
+        .severity-MEDIUM { background: #fefcbf; color: #975a16; }
+        .severity-LOW { background: #c6f6d5; color: #22543d; }
+        .severity-UNKNOWN { background: #e2e8f0; color: #4a5568; }
+
+        .alert-content {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .alert-content pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            color: #2d3748;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        /* Email Item Styles */
+        .email-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .email-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-subject {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .email-from {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .email-to {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .email-body {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .email-body pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            color: #2d3748;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .no-items {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .no-items-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .config-info {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #2d3748;
+        }
+
+        .config-info strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span class="status-indicator status-active"></span>
+                SMM Alert Dashboard
+            </h1>
+            <p> Dashboard for receivingHTTP alerts and SMTP emails from Streams Messaging Manager</p>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-button active" onclick="switchTab('http')">
+                    📊 HTTP Alerts
+                </button>
+                <button class="tab-button" onclick="switchTab('email')">
+                    📧 Email Alerts
+                </button>
+            </div>
+        </div>
+
+        <!-- HTTP Alerts Tab -->
+        <div id="http-tab" class="tab-content active">
+            <!-- HTTP Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total HTTP Alerts</h3>
+                    <div class="value" id="http-total-alerts">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>HTTP Alerts Today</h3>
+                    <div class="value" id="http-alerts-today">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Last HTTP Alert</h3>
+                    <div class="value" id="http-last-alert" style="font-size: 18px;">Never</div>
+                </div>
+            </div>
+
+            <!-- HTTP Controls -->
+            <div class="controls">
+                <button class="btn btn-success" onclick="refreshHttpAlerts()">
+                    🔄 Refresh
+                </button>
+                <button class="btn btn-primary" onclick="toggleHttpAutoRefresh()">
+                    <span id="http-auto-refresh-text">▶️ Enable Auto-Refresh</span>
+                </button>
+                <button class="btn btn-danger" onclick="clearAllHttpAlerts()">
+                    🗑️ Clear All HTTP Alerts
+                </button>
+                
+                <div class="filter-group" style="margin-left: auto;">
+                    <label for="http-severity-filter">Filter by Severity:</label>
+                    <select id="http-severity-filter" onchange="filterHttpAlerts()">
+                        <option value="">All</option>
+                        <option value="CRITICAL">Critical</option>
+                        <option value="HIGH">High</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="LOW">Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- HTTP Configuration Info -->
+            <div class="config-info">
+                <strong>Configure SMM HTTP Notifier:</strong><br>
+                URL: http://&lt;your-server-ip&gt;:18123/api/alerts
+            </div>
+
+            <!-- HTTP Alerts List -->
+            <div class="content-container" style="margin-top: 20px;">
+                <div class="content-header">
+                    <h2>HTTP Alerts</h2>
+                    <span class="item-count" id="http-alert-count">0 alerts</span>
+                </div>
+                <div id="http-alerts-list">
+                    <div class="no-items">
+                        <div class="no-items-icon">📭</div>
+                        <p>No HTTP alerts received yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Alerts Tab -->
+        <div id="email-tab" class="tab-content">
+            <!-- Email Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Emails</h3>
+                    <div class="value" id="email-total-emails">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Emails Today</h3>
+                    <div class="value" id="email-emails-today">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Last Email</h3>
+                    <div class="value" id="email-last-email" style="font-size: 18px;">Never</div>
+                </div>
+            </div>
+
+            <!-- Email Controls -->
+            <div class="controls">
+                <button class="btn btn-success" onclick="refreshEmails()">
+                    🔄 Refresh
+                </button>
+                <button class="btn btn-primary" onclick="toggleEmailAutoRefresh()">
+                    <span id="email-auto-refresh-text">▶️ Enable Auto-Refresh</span>
+                </button>
+                <button class="btn btn-danger" onclick="clearAllEmails()">
+                    🗑️ Clear All Emails
+                </button>
+            </div>
+
+            <!-- SMTP Configuration Info -->
+            <div class="config-info">
+                <strong>Configure SMM Email Notifier:</strong><br>
+                SMTP Hostname: &lt;your-server-ip&gt;<br>
+                SMTP Port: 1025<br>
+                Username: admin<br>
+                Password: admin<br>
+                Enable Auth: Yes<br>
+                To Address: any@example.com
+            </div>
+
+            <!-- Emails List -->
+            <div class="content-container" style="margin-top: 20px;">
+                <div class="content-header">
+                    <h2>Received Emails</h2>
+                    <span class="item-count" id="email-count">0 emails</span>
+                </div>
+                <div id="emails-list">
+                    <div class="no-items">
+                        <div class="no-items-icon">📧</div>
+                        <p>No emails received yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab management
+        let currentTab = 'http';
+        
+        // Auto-refresh state
+        let httpAutoRefreshInterval = null;
+        let emailAutoRefreshInterval = null;
+        let isHttpAutoRefreshEnabled = false;
+        let isEmailAutoRefreshEnabled = false;
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard loaded, fetching initial data...');
+            refreshHttpAlerts();
+            refreshEmails();
+            updateHttpStats();
+            updateEmailStats();
+        });
+
+        // Switch between tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.getElementById('http-tab').classList.remove('active');
+            document.getElementById('email-tab').classList.remove('active');
+            
+            if (tab === 'http') {
+                document.getElementById('http-tab').classList.add('active');
+                refreshHttpAlerts();
+            } else {
+                document.getElementById('email-tab').classList.add('active');
+                refreshEmails();
+            }
+        }
+
+        // ========================================
+        // HTTP ALERTS FUNCTIONS
+        // ========================================
+
+        async function refreshHttpAlerts() {
+            try {
+                console.log('Fetching HTTP alerts...');
+                const severityFilter = document.getElementById('http-severity-filter').value;
+                const url = severityFilter 
+                    ? `/api/alerts?severity=${severityFilter}&limit=100`
+                    : '/api/alerts?limit=100';
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log(`Received ${data.alerts.length} HTTP alerts`);
+                displayHttpAlerts(data.alerts);
+                updateHttpStats();
+            } catch (error) {
+                console.error('Error fetching HTTP alerts:', error);
+            }
+        }
+
+        function displayHttpAlerts(alerts) {
+            const alertsList = document.getElementById('http-alerts-list');
+            const alertCount = document.getElementById('http-alert-count');
+            
+            alertCount.textContent = `${alerts.length} alert${alerts.length !== 1 ? 's' : ''}`;
+            
+            if (alerts.length === 0) {
+                alertsList.innerHTML = `
+                    <div class="no-items">
+                        <div class="no-items-icon">📭</div>
+                        <p>No HTTP alerts found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            alertsList.innerHTML = alerts.map(alert => {
+                const severity = alert.data.severity || 'UNKNOWN';
+                const timestamp = new Date(alert.timestamp).toLocaleString();
+                const alertData = JSON.stringify(alert.data, null, 2);
+                
+                return `
+                    <div class="alert-item">
+                        <div class="alert-header">
+                            <span class="alert-id">Alert #${alert.id}</span>
+                            <span class="alert-severity severity-${severity}">${severity}</span>
+                        </div>
+                        <div class="alert-timestamp">
+                            📅 ${timestamp} | 🌐 From: ${alert.received_from}
+                        </div>
+                        <div class="alert-content">
+                            <pre>${alertData}</pre>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updateHttpStats() {
+            try {
+                const response = await fetch('/api/alerts/stats');
+                const stats = await response.json();
+                
+                document.getElementById('http-total-alerts').textContent = stats.total_received;
+                
+                const alertsResponse = await fetch('/api/alerts?limit=1000');
+                const alertsData = await alertsResponse.json();
+                
+                const today = new Date().toDateString();
+                const todayAlerts = alertsData.alerts.filter(alert => {
+                    const alertDate = new Date(alert.timestamp).toDateString();
+                    return alertDate === today;
+                });
+                document.getElementById('http-alerts-today').textContent = todayAlerts.length;
+                
+                if (alertsData.alerts.length > 0) {
+                    const lastAlert = new Date(alertsData.alerts[0].timestamp);
+                    document.getElementById('http-last-alert').textContent = formatTimeAgo(lastAlert);
+                } else {
+                    document.getElementById('http-last-alert').textContent = 'Never';
+                }
+            } catch (error) {
+                console.error('Error updating HTTP stats:', error);
+            }
+        }
+
+        function filterHttpAlerts() {
+            refreshHttpAlerts();
+        }
+
+        function toggleHttpAutoRefresh() {
+            if (isHttpAutoRefreshEnabled) {
+                clearInterval(httpAutoRefreshInterval);
+                isHttpAutoRefreshEnabled = false;
+                document.getElementById('http-auto-refresh-text').textContent = '▶️ Enable Auto-Refresh';
+            } else {
+                httpAutoRefreshInterval = setInterval(refreshHttpAlerts, 5000);
+                isHttpAutoRefreshEnabled = true;
+                document.getElementById('http-auto-refresh-text').textContent = '⏸️ Disable Auto-Refresh';
+            }
+        }
+
+        async function clearAllHttpAlerts() {
+            if (!confirm('Are you sure you want to clear all HTTP alerts?')) return;
+            
+            try {
+                const response = await fetch('/api/alerts/clear', { method: 'POST' });
+                if (response.ok) {
+                    refreshHttpAlerts();
+                    updateHttpStats();
+                }
+            } catch (error) {
+                console.error('Error clearing HTTP alerts:', error);
+            }
+        }
+
+        // ========================================
+        // EMAIL FUNCTIONS
+        // ========================================
+
+        async function refreshEmails() {
+            try {
+                console.log('Fetching emails...');
+                const response = await fetch('/api/emails?limit=100');
+                const data = await response.json();
+                
+                console.log(`Received ${data.emails.length} emails`);
+                displayEmails(data.emails);
+                updateEmailStats();
+            } catch (error) {
+                console.error('Error fetching emails:', error);
+            }
+        }
+
+        function displayEmails(emails) {
+            const emailsList = document.getElementById('emails-list');
+            const emailCount = document.getElementById('email-count');
+            
+            emailCount.textContent = `${emails.length} email${emails.length !== 1 ? 's' : ''}`;
+            
+            if (emails.length === 0) {
+                emailsList.innerHTML = `
+                    <div class="no-items">
+                        <div class="no-items-icon">📧</div>
+                        <p>No emails found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            emailsList.innerHTML = emails.map(email => {
+                const timestamp = new Date(email.timestamp).toLocaleString();
+                const to = Array.isArray(email.to) ? email.to.join(', ') : email.to;
+                
+                return `
+                    <div class="email-item">
+                        <div class="alert-header">
+                            <div>
+                                <div class="email-subject">${escapeHtml(email.subject)}</div>
+                                <div class="email-from">From: ${escapeHtml(email.from)}</div>
+                                <div class="email-to">To: ${escapeHtml(to)}</div>
+                            </div>
+                            <div class="alert-timestamp">
+                                📅 ${timestamp}
+                            </div>
+                        </div>
+                        <div class="email-body">
+                            <pre>${escapeHtml(email.body)}</pre>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updateEmailStats() {
+            try {
+                const response = await fetch('/api/emails/stats');
+                const stats = await response.json();
+                
+                document.getElementById('email-total-emails').textContent = stats.total_received;
+                
+                const emailsResponse = await fetch('/api/emails?limit=1000');
+                const emailsData = await emailsResponse.json();
+                
+                const today = new Date().toDateString();
+                const todayEmails = emailsData.emails.filter(email => {
+                    const emailDate = new Date(email.timestamp).toDateString();
+                    return emailDate === today;
+                });
+                document.getElementById('email-emails-today').textContent = todayEmails.length;
+                
+                if (emailsData.emails.length > 0) {
+                    const lastEmail = new Date(emailsData.emails[0].timestamp);
+                    document.getElementById('email-last-email').textContent = formatTimeAgo(lastEmail);
+                } else {
+                    document.getElementById('email-last-email').textContent = 'Never';
+                }
+            } catch (error) {
+                console.error('Error updating email stats:', error);
+            }
+        }
+
+        function toggleEmailAutoRefresh() {
+            if (isEmailAutoRefreshEnabled) {
+                clearInterval(emailAutoRefreshInterval);
+                isEmailAutoRefreshEnabled = false;
+                document.getElementById('email-auto-refresh-text').textContent = '▶️ Enable Auto-Refresh';
+            } else {
+                emailAutoRefreshInterval = setInterval(refreshEmails, 5000);
+                isEmailAutoRefreshEnabled = true;
+                document.getElementById('email-auto-refresh-text').textContent = '⏸️ Disable Auto-Refresh';
+            }
+        }
+
+        async function clearAllEmails() {
+            if (!confirm('Are you sure you want to clear all emails?')) return;
+            
+            try {
+                const response = await fetch('/api/emails/clear', { method: 'POST' });
+                if (response.ok) {
+                    refreshEmails();
+                    updateEmailStats();
+                }
+            } catch (error) {
+                console.error('Error clearing emails:', error);
+            }
+        }
+
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
+
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diffMinutes = Math.floor((now - date) / 60000);
+            
+            if (diffMinutes < 1) return 'Just now';
+            if (diffMinutes < 60) return `${diffMinutes}m ago`;
+            
+            const diffHours = Math.floor(diffMinutes / 60);
+            if (diffHours < 24) return `${diffHours}h ago`;
+            
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays}d ago`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
+
