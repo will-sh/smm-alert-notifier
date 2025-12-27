@@ -9,39 +9,18 @@ A unified web server to receive and display alerts from Streams Messaging Manage
 - **Real-time Updates**: Auto-refresh and filtering capabilities
 - **Separate Storage**: Independent stores for HTTP alerts and emails
 - **Statistics Tracking**: Separate stats for each alert type
-- **Multi-Platform Docker**: Works on AMD64 and ARM64
 
 ## Quick Start
 
 ### Deploy from Docker Hub
-
 ```bash
-docker pull wxiao695/smm-alert-receiver:latest
 docker run -d \
   -p 18123:18123 \
   -p 1025:1025 \
   --name smm-alert-receiver \
   wxiao695/smm-alert-receiver:latest
 ```
-
 Access the dashboard at: `http://localhost:18123`
-
-### Build and Deploy
-
-```bash
-# Clone repository
-git clone https://github.com/will-sh/smm-alert-receiver.git
-cd smm-alert-receiver
-
-# Set your Docker Hub username
-export DOCKER_HUB_USERNAME=your-username
-
-# Build for AMD64 and ARM64
-./docker-build-multiplatform.sh
-
-# Or use docker-compose
-docker compose up -d
-```
 
 ## Configure SMM Notifiers
 
@@ -117,7 +96,6 @@ python test_email.py
 - `SMTP_HOST` - SMTP bind address (default: 0.0.0.0)
 - `SMTP_USERNAME` - SMTP authentication username (default: admin)
 - `SMTP_PASSWORD` - SMTP authentication password (default: admin)
-- `DOCKER_HUB_USERNAME` - Your Docker Hub username (for builds)
 
 ## Requirements
 
